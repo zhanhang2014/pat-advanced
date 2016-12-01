@@ -3,53 +3,49 @@
 #include <queue>
 using namespace std;
 
-struct Node{
-	int lv;
-	vector<int> fans;
-};
-
+vector< vector<int> > fans;
 int n, l;
-vector<Node> node;
-vector<bool> visited;
 
-void bfs(int f){
-	node[f].lv = 0;
-	visited.assign(n + 1, false);
-	queue<int> que;
-	que.push(f);
-	visited[f] = true;
-	int cnt = 0;
-	while (!que.empty()){
-		int cur = que.front();
-		que.pop();
-		for (int i = 0; i < node[cur].fans.size(); i++){
-			int idx = node[cur].fans[i];
-			if (!visited[idx] && node[cur].lv < l){
-				visited[idx] = true;
-				node[idx].lv = node[cur].lv + 1;
-				que.push(idx);
-				cnt++;
-			}
-		}
-	}
-	cout << cnt << endl;
+void forwardcnt(int t){
+  vector<bool> visited(n + 1, false);
+  queue<int> que;
+  int cnt = 0, level = 0;
+  visited[t] = true;
+  que.push(t);
+  int sz = que.size(),cur;
+  while ((!que.empty()) && (level < l)){
+    for (int i = 0; i < sz; i++){
+      cur = que.front();
+      que.pop();
+      for (int j = 0; j < fans[cur].size(); j++){
+        if (!visited[fans[cur][j]]){
+          visited[fans[cur][j]] = true;
+          que.push(fans[cur][j]);
+          cnt++;
+        }
+      }
+    }
+    sz = que.size();
+    level++;
+  }
+  cout << cnt << endl;
 }
 
 int main(){
-	int num, f;
-	cin >> n >> l;
-	node.resize(n + 1);
-	for (int i = 1; i <= n; i++){
-		cin >> num;
-		for (int j = 0; j < num; j++){
-			cin >> f;
-			node[f].fans.push_back(i);
-		}
-	}
-	cin >> num;
-	for (int i = 0; i < num; i++){
-		cin >> f;
-		bfs(f);
-	}
-	return 0;
+  cin >> n >> l;
+  fans.resize(n+1);
+  int fn, f;
+  for (int i = 1; i <= n; i++){
+    cin >> fn;
+    for (int j = 0; j < fn; j++){
+      cin >> f;
+      fans[f].push_back(i);
+    }
+  }
+  cin >> fn;
+  for (int i = 0; i < fn; i++){
+    cin >> f;
+    forwardcnt(f);
+  }
+  return 0;
 }
