@@ -1,81 +1,95 @@
-#include <cstdio>
+#include <iostream>
+#include <vector>
 #include <algorithm>
 using namespace std;
-struct DATA {
-    int id, fid, mid, num, area;
-    int cid[10];
-}data[1005];
-struct node {
-    int id, people;
-    double num, area;
-    bool flag = false;
-}ans[10000];
-int father[10000];
-bool visit[10000];
-int find(int x) {
-    while(x != father[x])
-        x = father[x];
+
+struct Family{
+    int root;
+    int mem;
+    double num;
+    double area;
+    Family(int r, int m, double n, double a){ root = r; mem = m; num = n; area = a; };
+};
+vector<Family> family;
+int fa[10000];
+double anum[10000] = { 0 };
+double aarea[10000];
+int member[10000] = { 0 };
+bool exist[10000] = { false };
+int n;
+
+int findf(int x){
+    while (x != fa[x]) x = fa[x];
     return x;
 }
-void Union(int a, int b) {
-    int faA = find(a);
-    int faB = find(b);
-    if(faA > faB)
-        father[faA] = faB;
-    else if(faA < faB)
-        father[faB] = faA;
+
+void Union(int x, int y){
+    int fx = findf(x);
+    int fy = findf(y);
+    if (fx > fy) {
+        fa[fx] = fy;
+        return;
+    }
+    if (fx < fy) {
+        fa[fy] = fx;
+        return;
+    }
 }
-int cmp1(node a, node b) {
-    if(a.area != b.area)
+
+bool cmp(Family a, Family b){
+    if (a.area != b.area){
         return a.area > b.area;
-    else
-        return a.id < b.id;
+    }
+    else{
+        return a.root < b.root;
+    }
 }
-int main() {
-    int n, k, cnt = 0;
-    scanf("%d", &n);
-    for(int i = 0; i < 10000; i++)
-        father[i] = i;
-    for(int i = 0; i < n; i++) {
-        scanf("%d %d %d %d", &data[i].id, &data[i].fid, &data[i].mid, &k);
-        visit[data[i].id] = true;
-        if(data[i].fid != -1) {
-            visit[data[i].fid] = true;
-            Union(data[i].fid, data[i].id);
-        }
-        if(data[i].mid != -1) {
-            visit[data[i].mid] = true;
-            Union(data[i].mid, data[i].id);
-        }
-        for(int j = 0; j < k; j++) {
-            scanf("%d", &data[i].cid[j]);
-            visit[data[i].cid[j]] = true;
-            Union(data[i].cid[j], data[i].id);
-        }
-        scanf("%d %d", &data[i].num, &data[i].area);
+
+int main(){
+    for (int i = 0; i < 10000; i++){
+        fa[i] = i;
     }
-    for(int i = 0; i < n; i++) {
-        int id = find(data[i].id);
-        ans[id].id = id;
-        ans[id].num += data[i].num;
-        ans[id].area += data[i].area;
-        ans[id].flag = true;
+    cin >> n;
+    int id, fid, mid, m, c;
+    for (int i = 0; i < n; i++){
+        cin >> id >> fid >> mid >> m;
+        exist[id] = true;
+        if (fid != -1) {
+            Union(id, fid);
+            exist[fid] = true;
+        }
+        if (mid != -1) {
+            Union(id, mid);
+            exist[mid] = true;
+        }
+        for (int i = 0; i < m; i++){
+            cin >> c;
+            Union(id, c);
+            exist[c] = true;
+        }
+        cin >> anum[id] >> aarea[id];
     }
-    for(int i = 0; i < 10000; i++) {
-        if(visit[i])
-            ans[find(i)].people++;
-        if(ans[i].flag)
+    for (int i = 0; i < 10000; i++){
+        if (exist[i]){
+            int root = findf(i);
+            if (i != root){
+                anum[root] += anum[i];
+                aarea[root] += aarea[i];
+            }
+            member[root]++;
+        }
+    }
+    int cnt = 0;
+    for (int i = 0; i < 10000; i++){
+        if (member[i] != 0){
+            family.push_back(Family(i,member[i],anum[i]/member[i],aarea[i]/member[i]));
             cnt++;
-    }
-    for(int i = 0; i < 10000; i++) {
-        if(ans[i].flag) {
-            ans[i].num = (double)(ans[i].num * 1.0 / ans[i].people);
-            ans[i].area = (double)(ans[i].area * 1.0 / ans[i].people);
         }
     }
-    sort(ans, ans + 10000, cmp1);
-    printf("%d\n", cnt);
-    for(int i = 0; i < cnt; i++)
-        printf("%04d %d %.3f %.3f\n", ans[i].id, ans[i].people, ans[i].num, ans[i].area);
+    cout << cnt << endl;
+    sort(family.begin(), family.end(), cmp);
+    for (int i = 0; i < cnt; i++){
+        printf("%04d %d %.3lf %.3lf\n", family[i].root, family[i].mem, family[i].num, family[i].area);
+    }
     return 0;
 }

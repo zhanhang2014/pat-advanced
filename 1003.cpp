@@ -4,11 +4,11 @@ using namespace std;
 
 const int inf = 99999999;
 int n, m, c1, c2;
-vector<int> dist,hand,path,tmppath;
+vector<int> dist, hand;
 vector<bool> visited;
 vector< vector<int> > pre;
 int cmap[501][501];
-int maxhand = 0, cntpath = 0;
+int maxhand = 0, cntpath = 0, team = 0;
 
 void dijkstra(){
 	int mindist, idx;
@@ -39,29 +39,23 @@ void dijkstra(){
 }
 
 void dfs(int r){
-	tmppath.push_back(r);
+	team += hand[r];
 	if (r == c1){
-		int tmphand = 0;
-		for (int i = 0; i < tmppath.size(); i++){
-			tmphand += hand[tmppath[i]];
-		}
-		if (tmphand > maxhand){
-			maxhand = tmphand;
-		}
+		if (maxhand < team) maxhand = team;
 		cntpath++;
-		tmppath.pop_back();
+		team -= hand[r];
 		return;
 	}
 	for (int i = 0; i < pre[r].size(); i++){
 		dfs(pre[r][i]);
 	}
-	tmppath.pop_back();
+	team -= hand[r];
 }
 
 int main(){
 	cin >> n >> m >> c1 >> c2;
 	dist.assign(n, inf);
-	hand.assign(n, 0);
+	hand.assign(n, -1);
 	visited.assign(n, false);
 	pre.resize(n);
 	fill(cmap[0], cmap[0] + 501 * 501, inf);
@@ -78,5 +72,6 @@ int main(){
 	dijkstra();
 	dfs(c2);
 	cout << cntpath << ' ' << maxhand << endl;
+	system("pause");
 	return 0;
 }
