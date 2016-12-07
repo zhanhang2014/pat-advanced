@@ -8,11 +8,6 @@ int n, q;
 int findf(int x){
 	int a = x;
 	while (x != fa[x]) x = fa[x];
-	while (a != fa[a]) {
-		int z = a;
-		a = fa[a];
-		fa[z] = x;
-	}
 	return x;
 }
 
